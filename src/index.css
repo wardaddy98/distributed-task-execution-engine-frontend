@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  /* Keep focused elements clear of the header, which is only sticky from lg up. */
+  @media (min-width: 1024px) {
+    html {
+      scroll-padding-top: 6rem;
+    }
+  }
+
+  body {
+    @apply min-h-screen bg-slate-950 font-sans text-slate-100 antialiased;
+  }
+}
