@@ -32,9 +32,9 @@ test('offers the 10 predefined API keys, defaulting to the first', () => {
   expect(getKeySelect()).toHaveValue(DEFAULT_API_KEY);
 });
 
-test('describes how the selected key is used', () => {
+test('shows how the selected key is used', () => {
   renderHeader();
-  expect(getKeySelect()).toHaveAccessibleDescription(
+  expect(screen.getByText(/with task requests/)).toHaveTextContent(
     'Sent as x-api-key with task requests',
   );
 });

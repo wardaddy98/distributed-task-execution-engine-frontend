@@ -43,6 +43,7 @@ Linting is ESLint's `react-app` config, built into react-scripts; warnings surfa
 ## Frontend conventions
 
 - Styling is Tailwind CSS v3 (CRA 5 picks up `tailwind.config.js` natively; v4 would need a PostCSS override CRA doesn't allow). The dark theme base lives in `src/index.css`. CRA only detects the Tailwind config when the dev server starts, so restart `npm start` if styles are missing.
+- Don't use screen-reader-only markup: no `aria-*` attributes, explicit ARIA `role`s, or `sr-only` text. Plain semantic HTML (`<label htmlFor>`, `<button>`, headings, `<nav>`, lists) is fine. Tests query by visible text, labels, headings and native roles.
 - Components live in `src/components/<Name>/index.jsx` with tests in `<Name>.test.js`; reusable helpers go in `src/utils/`.
 - HTTP calls go through `src/services/api.js` (`get`, `post`, `put`, `patch` on an axios instance with `baseURL` from `REACT_APP_API_URL`). Each call resolves to the unwrapped `body` and rejects with `ApiError` (`message` from the backend, `status` undefined when the server is unreachable). Pass the key per call: `post('/task', data, { apiKey })`.
 - The selected API key lives in `ApiKeyContext` (`src/context/ApiKeyContext.jsx`, `useApiKey()`), is chosen from the fixed list in `src/utils/apiKeys.js`, and is persisted to localStorage. Capture the key when a request is sent rather than reading it again when the response arrives (`POST /task` can stay open for a long time).

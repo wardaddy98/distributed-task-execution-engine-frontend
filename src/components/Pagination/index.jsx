@@ -1,7 +1,7 @@
 import Button from '../Button';
 
 const Pagination = ({ currentPage, totalPages, handleNext, handlePrevious }) => (
-  <nav aria-label="Pagination" className="flex items-center justify-between gap-3 sm:justify-end">
+  <nav className="flex items-center justify-between gap-3 sm:justify-end">
     <Button
       color="secondary"
       variant="outlined"
@@ -10,7 +10,7 @@ const Pagination = ({ currentPage, totalPages, handleNext, handlePrevious }) => 
     >
       Previous
     </Button>
-    <p aria-live="polite" className="text-sm tabular-nums text-slate-300">
+    <p className="text-sm tabular-nums text-slate-300">
       Page {currentPage} of {totalPages}
     </p>
     <Button

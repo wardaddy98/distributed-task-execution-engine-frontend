@@ -1,9 +1,9 @@
 import { render, screen, within } from '@testing-library/react';
 import WorkersIndicator from '.';
 
-test('renders a labelled Workers section', () => {
+test('renders the Workers heading', () => {
   render(<WorkersIndicator total={4} idle={3} busy={1} />);
-  expect(screen.getByRole('region', { name: 'Workers' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Workers' })).toBeInTheDocument();
 });
 
 test('shows total, idle and busy counts from props', () => {
@@ -17,6 +17,6 @@ test('shows total, idle and busy counts from props', () => {
 
 test('renders zero counts', () => {
   render(<WorkersIndicator total={0} idle={0} busy={0} />);
-  const section = screen.getByRole('region', { name: 'Workers' });
+  const section = screen.getByRole('heading', { name: 'Workers' }).closest('section');
   expect(within(section).getAllByText('0')).toHaveLength(3);
 });

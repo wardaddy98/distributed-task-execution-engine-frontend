@@ -11,8 +11,6 @@ const fieldClassName =
 
 const TaskForm = () => {
   const [formValues, setFormValues] = useState({ type: '', priority: '', payload: '{}' });
-
-  const headingId = useId();
   const typeId = useId();
   const priorityId = useId();
   const payloadId = useId();
@@ -36,10 +34,9 @@ const TaskForm = () => {
 
   return (
     <section
-      aria-labelledby={headingId}
       className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-lg shadow-black/20 sm:p-6"
     >
-      <h2 id={headingId} className="text-lg font-semibold text-slate-50">
+      <h2 className="text-lg font-semibold text-slate-50">
         Submit a task
       </h2>
 

@@ -63,8 +63,6 @@ const FilterTasks = ({ tasks = DUMMY_TASKS }) => {
     }
     setResult(next);
   }, [tasks, appliedFilters, currentPage]);
-
-  const headingId = useId();
   const ids = {
     status: useId(),
     type: useId(),
@@ -111,10 +109,9 @@ const FilterTasks = ({ tasks = DUMMY_TASKS }) => {
 
   return (
     <section
-      aria-labelledby={headingId}
       className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-lg shadow-black/20 sm:p-6"
     >
-      <h2 id={headingId} className="text-lg font-semibold text-slate-50">
+      <h2 className="text-lg font-semibold text-slate-50">
         Filter All Tasks
       </h2>
 
@@ -152,7 +149,6 @@ const FilterTasks = ({ tasks = DUMMY_TASKS }) => {
               name="startDate"
               value={filters.startDate}
               onChange={handleChange}
-              aria-invalid={isDateRangeInvalid || undefined}
               className={fieldClassName}
             />
           </div>
@@ -167,7 +163,6 @@ const FilterTasks = ({ tasks = DUMMY_TASKS }) => {
               name="endDate"
               value={filters.endDate}
               onChange={handleChange}
-              aria-invalid={isDateRangeInvalid || undefined}
               className={fieldClassName}
             />
           </div>
@@ -181,7 +176,7 @@ const FilterTasks = ({ tasks = DUMMY_TASKS }) => {
         </div>
       </form>
 
-      <p aria-live="polite" className="mt-4 text-sm text-slate-400">
+      <p className="mt-4 text-sm text-slate-400">
         {result === null
           ? 'Choose filters and apply them to find tasks.'
           : `${result.pagination.totalCount} ${

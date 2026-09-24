@@ -1,4 +1,3 @@
-import { useId } from 'react';
 import { DUMMY_TASKS } from '../../utils/dummyTasks';
 import TaskCard from '../TaskCard';
 
@@ -11,21 +10,15 @@ const COLUMNS = [
 ];
 
 const TasksSection = ({ tasks = DUMMY_TASKS }) => {
-  const headingId = useId();
-
   return (
     <section
-      aria-labelledby={headingId}
       className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-lg shadow-black/20 sm:p-6"
     >
-      <h2 id={headingId} className="text-lg font-semibold text-slate-50">
+      <h2 className="text-lg font-semibold text-slate-50">
         Tasks
       </h2>
 
-      <div
-
-        className="relative mt-4 grid auto-cols-[minmax(13rem,1fr)] grid-flow-col gap-4 overflow-x-auto rounded-lg pb-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-      >
+      <div className="mt-4 grid auto-cols-[minmax(13rem,1fr)] grid-flow-col gap-4 overflow-x-auto pb-2">
         {COLUMNS.map(({ status, title }) => {
           const columnTasks = tasks.filter(task => task.status === status);
 
@@ -34,12 +27,10 @@ const TasksSection = ({ tasks = DUMMY_TASKS }) => {
               <h3 className="mb-3 flex items-center justify-between text-sm font-semibold text-slate-200">
                 {title}
                 <span
-                  aria-hidden="true"
                   className="rounded-full bg-slate-800 px-2 py-0.5 text-xs text-slate-300"
                 >
                   {columnTasks.length}
                 </span>
-                <span className="sr-only">, {columnTasks.length} tasks</span>
               </h3>
 
               {columnTasks.length ? (

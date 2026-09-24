@@ -16,7 +16,7 @@ const getColumn = title =>
 
 test('renders the Tasks section with a column per status', () => {
   render(<TasksSection tasks={[]} />);
-  expect(screen.getByRole('region', { name: 'Tasks' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 2, name: 'Tasks' })).toBeInTheDocument();
   ['Running', 'Queued', 'Failed', 'Dead', 'Completed'].forEach(title =>
     expect(
       screen.getByRole('heading', { level: 3, name: new RegExp(`^${title}`) }),
@@ -34,7 +34,7 @@ test('places each task in the column for its status, with counts', () => {
   expect(within(getColumn('Running')).getAllByRole('article')).toHaveLength(1);
   expect(within(getColumn('Queued')).getAllByRole('article')).toHaveLength(2);
   expect(within(getColumn('Dead')).getAllByRole('article')).toHaveLength(1);
-  expect(screen.getByRole('heading', { level: 3, name: /^Queued.*2 tasks$/ })).toBeInTheDocument();
+  expect(within(getColumn('Queued')).getByRole('heading', { level: 3 })).toHaveTextContent('Queued2');
 });
 
 test('shows an empty message for columns without tasks', () => {

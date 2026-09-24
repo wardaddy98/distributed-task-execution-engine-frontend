@@ -22,16 +22,11 @@ const TaskCard = ({ task, onCancel, onRetry }) => {
       {status === 'running' && (
         <div className="flex items-center gap-2">
           <div
-            role="progressbar"
-            aria-label={`${type} progress`}
-            aria-valuenow={progress}
-            aria-valuemin={0}
-            aria-valuemax={100}
             className="h-2 flex-1 overflow-hidden rounded-full bg-slate-800"
           >
             <div className="h-full rounded-full bg-sky-400" style={{ width: `${progress}%` }} />
           </div>
-          <span aria-hidden="true" className="w-9 text-right text-xs tabular-nums text-slate-300">{progress}%</span>
+          <span className="w-9 text-right text-xs tabular-nums text-slate-300">{progress}%</span>
         </div>
       )}
 
@@ -48,7 +43,7 @@ const TaskCard = ({ task, onCancel, onRetry }) => {
       {canCancel && (
         <div className="mt-auto flex justify-end">
           <Button color="secondary" variant="outlined" onClick={() => onCancel(id)}>
-            Cancel<span className="sr-only"> {type} task {id.slice(0, 8)}</span>
+            Cancel
           </Button>
         </div>
       )}
@@ -56,7 +51,7 @@ const TaskCard = ({ task, onCancel, onRetry }) => {
       {status === 'dead' && (
         <div className="mt-auto flex justify-end">
           <Button variant="outlined" onClick={() => onRetry(id)}>
-            Retry<span className="sr-only"> {type} task {id.slice(0, 8)}</span>
+            Retry
           </Button>
         </div>
       )}

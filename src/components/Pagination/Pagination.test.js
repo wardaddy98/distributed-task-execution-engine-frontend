@@ -18,7 +18,7 @@ const renderPagination = (currentPage, totalPages) => {
 
 test('shows the current page and total pages', () => {
   renderPagination(2, 5);
-  expect(screen.getByRole('navigation', { name: 'Pagination' })).toHaveTextContent('Page 2 of 5');
+  expect(screen.getByRole('navigation')).toHaveTextContent('Page 2 of 5');
 });
 
 test('calls handleNext and handlePrevious', () => {
