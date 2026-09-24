@@ -34,18 +34,16 @@ Any ambiguity should be cleared before moving to write the actual code
 
 - `npm start` — dev server on http://localhost:3000 (the backend runs on port 3001 by default, so both can run together)
 - `npm run build` — production build into `build/`
-- `npm test` — Jest via react-scripts in interactive watch mode
-- `npx react-scripts test --watchAll=false` — run the suite once (non-interactive)
-- `npx react-scripts test --watchAll=false src/App.test.js` — run a single test file (append `-t "<name>"` to filter by test name)
 
-Linting is ESLint's `react-app` config, built into react-scripts; warnings surface in the `npm start`/`npm run build` output — there is no separate lint script. Tests use React Testing Library, with `@testing-library/jest-dom` matchers loaded in `src/setupTests.js`.
+Linting is ESLint's `react-app` config, built into react-scripts; warnings surface in the `npm start`/`npm run build` output — there is no separate lint script. The project has no automated tests.
 
 ## Frontend conventions
 
 - Styling is Tailwind CSS v3 (CRA 5 picks up `tailwind.config.js` natively; v4 would need a PostCSS override CRA doesn't allow). The dark theme base lives in `src/index.css`. CRA only detects the Tailwind config when the dev server starts, so restart `npm start` if styles are missing.
-- Don't use screen-reader-only markup: no `aria-*` attributes, explicit ARIA `role`s, or `sr-only` text. Plain semantic HTML (`<label htmlFor>`, `<button>`, headings, `<nav>`, lists) is fine. Tests query by visible text, labels, headings and native roles.
-- Components live in `src/components/<Name>/index.jsx` with tests in `<Name>.test.js`; reusable helpers go in `src/utils/`.
-- HTTP calls go through `src/services/api.js` (`get`, `post`, `put`, `patch` on an axios instance with `baseURL` from `REACT_APP_API_URL`). Each call resolves to the unwrapped `body` and rejects with `ApiError` (`message` from the backend, `status` undefined when the server is unreachable). Pass the key per call: `post('/task', data, { apiKey })`.
+- Don't use screen-reader-only markup: no `aria-*` attributes, explicit ARIA `role`s, or `sr-only` text. Plain semantic HTML (`<label htmlFor>`, `<button>`, headings, `<nav>`, lists) is fine.
+- Components live in `src/components/<Name>/index.jsx`; reusable helpers go in `src/utils/`, hooks in `src/hooks/`.
+- HTTP calls go through `src/service/api.js` (`get(url, params)`, `post`/`put`/`patch(url, data)` on an axios instance with `baseURL` from `REACT_APP_API_URL`). A request interceptor adds `x-api-key` from localStorage (kept in sync by `ApiKeyProvider`). Calls resolve to the full `{ status, message, body }` and reject with an `Error` carrying the backend `message`.
+- Live updates use SSE: `useTaskEvents` (`GET /task/events`, `task` events) and `useWorkerEvents` (`GET /worker/events`, `worker` events with `{ total, idle, busy }`).
 - The selected API key lives in `ApiKeyContext` (`src/context/ApiKeyContext.jsx`, `useApiKey()`), is chosen from the fixed list in `src/utils/apiKeys.js`, and is persisted to localStorage. Capture the key when a request is sent rather than reading it again when the response arrives (`POST /task` can stay open for a long time).
 
 ## Backend API contract
