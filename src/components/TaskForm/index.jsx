@@ -4,7 +4,7 @@ import { parseJsonObject } from "../../utils/json";
 import Button from "../Button";
 import { post } from "../../service/api";
 
-const TASK_TYPES = ["image_processing", "report_generation"];
+const TASK_TYPES = ["image_processing", "report_generation", "deliberate_fail_task"];
 const PRIORITIES = [1, 2, 3, 4, 5];
 
 const fieldClassName =

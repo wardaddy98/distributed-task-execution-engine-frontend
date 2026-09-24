@@ -18,7 +18,7 @@ test('shows type and priority options as-is, with nothing selected', () => {
   render(<TaskForm />);
   expect(getType()).toHaveValue('');
   expect(getPriority()).toHaveValue('');
-  ['image_processing', 'report_generation', '1', '2', '3', '4', '5'].forEach(name =>
+  ['image_processing', 'report_generation', 'deliberate_fail_task', '1', '2', '3', '4', '5'].forEach(name =>
     expect(screen.getByRole('option', { name })).toBeInTheDocument(),
   );
 });

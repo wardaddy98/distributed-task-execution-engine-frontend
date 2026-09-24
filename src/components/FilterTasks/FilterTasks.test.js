@@ -1,155 +1,107 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { toast } from 'react-toastify';
 import FilterTasks from '.';
+import { get } from '../../service/api';
 
+jest.mock('../../service/api', () => ({ get: jest.fn() }));
 jest.mock('react-toastify', () => ({ toast: { error: jest.fn() } }));
 
-const makeTask = (id, overrides) => ({
+const makeTask = id => ({
   id: `${id}0000000-0000-0000-0000-000000000000`,
   type: 'image_processing',
   priority: 3,
   status: 'queued',
-  progress: 0,
-  retries: 0,
   createdAt: '2026-09-20T10:00:00',
-  ...overrides,
 });
 
-const tasks = [
-  makeTask(1, { status: 'running', priority: 5 }),
-  makeTask(2, { status: 'queued', type: 'report_generation', createdAt: '2026-09-22T10:00:00' }),
-  makeTask(3, { status: 'dead', priority: 1, createdAt: '2026-09-24T23:30:00' }),
-];
+// Mirrors the backend: { status, message, body: { data, pagination } }.
+const respond = (data, currentPage = 1, totalPages = 1) =>
+  get.mockResolvedValue({
+    status: 200,
+    message: 'Task loaded Successfully',
+    body: { data, pagination: { totalCount: data.length, totalPages, currentPage } },
+  });
 
 const apply = () => userEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
-const setDate = (label, value) =>
-  fireEvent.change(screen.getByLabelText(label), { target: { value } });
 
 beforeEach(() => {
+  get.mockReset();
   toast.error.mockClear();
 });
 
-test('renders the heading and all filter fields', () => {
-  render(<FilterTasks tasks={tasks} />);
-  expect(screen.getByRole('heading', { name: 'Filter All Tasks' })).toBeInTheDocument();
-  ['Status', 'Type', 'Priority'].forEach(name =>
-    expect(screen.getByRole('combobox', { name })).toHaveValue(''),
-  );
-  expect(screen.getByLabelText('Start date')).toHaveAttribute('type', 'date');
-  expect(screen.getByLabelText('End date')).toHaveAttribute('type', 'date');
+test('fetches page 1 on mount and shows the returned tasks', async () => {
+  respond([makeTask(1), makeTask(2)]);
+  render(<FilterTasks />);
+
+  expect(await screen.findAllByRole('article')).toHaveLength(2);
+  expect(get).toHaveBeenCalledWith('/task', expect.objectContaining({ page: 1 }));
 });
 
-test('shows status, type and priority options as-is', () => {
-  render(<FilterTasks tasks={tasks} />);
-  ['dead', 'cancelled', 'report_generation', '5'].forEach(name =>
-    expect(screen.getByRole('option', { name })).toBeInTheDocument(),
-  );
-});
+test('Apply sends the selected filters as query params', async () => {
+  respond([makeTask(1)]);
+  render(<FilterTasks />);
+  await screen.findByRole('article');
 
-test('shows all tasks before any filter is applied', () => {
-  render(<FilterTasks tasks={tasks} />);
-  expect(screen.getByText('3 tasks match.')).toBeInTheDocument();
-  expect(screen.getAllByRole('article')).toHaveLength(3);
-});
-
-test('matches every task when no filters are set', () => {
-  render(<FilterTasks tasks={tasks} />);
-  apply();
-  expect(screen.getByText('3 tasks match.')).toBeInTheDocument();
-  expect(screen.getAllByRole('article')).toHaveLength(3);
-});
-
-test('filters by status, type and priority together', () => {
-  render(<FilterTasks tasks={tasks} />);
-  userEvent.selectOptions(screen.getByRole('combobox', { name: 'Status' }), 'queued');
-  userEvent.selectOptions(screen.getByRole('combobox', { name: 'Type' }), 'report_generation');
-  userEvent.selectOptions(screen.getByRole('combobox', { name: 'Priority' }), '3');
-  apply();
-  expect(screen.getByText('1 task matches.')).toBeInTheDocument();
-});
-
-test('filters by an inclusive date range', () => {
-  render(<FilterTasks tasks={tasks} />);
-  setDate('Start date', '2026-09-22');
-  setDate('End date', '2026-09-24');
-  apply();
-  expect(screen.getByText('2 tasks match.')).toBeInTheDocument();
-});
-
-test('rejects a start date after the end date and clears the previous result', () => {
-  render(<FilterTasks tasks={tasks} />);
-  apply();
-  expect(screen.getByText('3 tasks match.')).toBeInTheDocument();
-
-  setDate('Start date', '2026-09-24');
-  setDate('End date', '2026-09-20');
-
-  apply();
-  expect(toast.error).toHaveBeenCalledWith('Start date must be on or before end date');
-  expect(screen.queryByText(/match/)).not.toBeInTheDocument();
-});
-
-test('reset clears the filters and shows all tasks again', () => {
-  render(<FilterTasks tasks={tasks} />);
   userEvent.selectOptions(screen.getByRole('combobox', { name: 'Status' }), 'dead');
+  userEvent.selectOptions(screen.getByRole('combobox', { name: 'Priority' }), '5');
+  fireEvent.change(screen.getByLabelText('Start date'), { target: { value: '2026-09-01' } });
   apply();
-  expect(screen.getByText('1 task matches.')).toBeInTheDocument();
 
+  expect(get).toHaveBeenLastCalledWith('/task', {
+    status: 'dead',
+    type: '',
+    priority: '5',
+    startDate: '2026-09-01',
+    endDate: '',
+    page: 1,
+  });
+});
+
+test('changing the page fetches that page', async () => {
+  respond([makeTask(1)], 1, 3);
+  render(<FilterTasks />);
+  await screen.findByText('Page 1 of 3');
+
+  respond([makeTask(2)], 2, 3);
+  userEvent.click(screen.getByRole('button', { name: 'Next' }));
+
+  expect(await screen.findByText('Page 2 of 3')).toBeInTheDocument();
+  expect(get).toHaveBeenLastCalledWith('/task', expect.objectContaining({ page: 2 }));
+});
+
+test('Apply on a later page goes back to page 1', async () => {
+  respond([makeTask(1)], 1, 3);
+  render(<FilterTasks />);
+  await screen.findByText('Page 1 of 3');
+
+  respond([makeTask(2)], 2, 3);
+  userEvent.click(screen.getByRole('button', { name: 'Next' }));
+  await screen.findByText('Page 2 of 3');
+
+  respond([makeTask(3)], 1, 3);
+  apply();
+  expect(await screen.findByText('Page 1 of 3')).toBeInTheDocument();
+  expect(get).toHaveBeenLastCalledWith('/task', expect.objectContaining({ page: 1 }));
+});
+
+test('shows an empty message when nothing matches', async () => {
+  respond([], 1, 0);
+  render(<FilterTasks />);
+  expect(await screen.findByText('No tasks found.')).toBeInTheDocument();
+});
+
+test('shows a toast when the request fails', async () => {
+  get.mockRejectedValue(new Error('Server down'));
+  render(<FilterTasks />);
+  await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Server down'));
+});
+
+test('Reset clears the filter fields', async () => {
+  respond([]);
+  render(<FilterTasks />);
+  await screen.findByText('No tasks found.');
+  userEvent.selectOptions(screen.getByRole('combobox', { name: 'Status' }), 'dead');
   userEvent.click(screen.getByRole('button', { name: 'Reset' }));
   expect(screen.getByRole('combobox', { name: 'Status' })).toHaveValue('');
-  expect(screen.getByText('3 tasks match.')).toBeInTheDocument();
-  expect(screen.getAllByRole('article')).toHaveLength(3);
-});
-
-describe('pagination', () => {
-  const manyTasks = Array.from({ length: 7 }, (_, index) =>
-    makeTask(index, { status: index < 6 ? 'queued' : 'dead' }),
-  );
-
-  test('pages through results without pressing Apply', () => {
-    render(<FilterTasks tasks={manyTasks} />);
-    expect(screen.getByText('7 tasks match.')).toBeInTheDocument();
-    expect(screen.getAllByRole('article')).toHaveLength(5);
-    expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
-
-    userEvent.click(screen.getByRole('button', { name: 'Next' }));
-    expect(screen.getAllByRole('article')).toHaveLength(2);
-    expect(screen.getByText('Page 2 of 2')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
-
-    userEvent.click(screen.getByRole('button', { name: 'Previous' }));
-    expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
-  });
-
-  test('keeps the applied filters when paging, ignoring unapplied form changes', () => {
-    render(<FilterTasks tasks={manyTasks} />);
-    userEvent.selectOptions(screen.getByRole('combobox', { name: 'Status' }), 'queued');
-    apply();
-    expect(screen.getByText('6 tasks match.')).toBeInTheDocument();
-
-    userEvent.selectOptions(screen.getByRole('combobox', { name: 'Status' }), 'dead');
-    userEvent.click(screen.getByRole('button', { name: 'Next' }));
-    expect(screen.getByText('6 tasks match.')).toBeInTheDocument();
-    expect(screen.getAllByRole('article')).toHaveLength(1);
-  });
-
-  test('Apply goes back to the first page', () => {
-    render(<FilterTasks tasks={manyTasks} />);
-    userEvent.click(screen.getByRole('button', { name: 'Next' }));
-    expect(screen.getByText('Page 2 of 2')).toBeInTheDocument();
-
-    apply();
-    expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
-  });
-
-  test('moves back to the last page when the results shrink', () => {
-    const { rerender } = render(<FilterTasks tasks={manyTasks} />);
-    userEvent.click(screen.getByRole('button', { name: 'Next' }));
-    expect(screen.getByText('Page 2 of 2')).toBeInTheDocument();
-
-    rerender(<FilterTasks tasks={manyTasks.slice(0, 3)} />);
-    expect(screen.getByText('Page 1 of 1')).toBeInTheDocument();
-    expect(screen.getAllByRole('article')).toHaveLength(3);
-  });
 });

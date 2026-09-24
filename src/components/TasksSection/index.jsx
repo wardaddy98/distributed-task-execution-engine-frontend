@@ -10,9 +10,9 @@ const COLUMNS = [
   { status: "failed", title: "Failed" },
   { status: "dead", title: "Dead" },
   { status: "completed", title: "Completed" },
+  { status: "cancelled", title: "Cancelled" },
 ];
 
-//SG-FIX  retry logic, emit progress
 
 const TasksSection = () => {
   const [tasks, setTasks] = useState([]);
@@ -46,7 +46,7 @@ const TasksSection = () => {
 
   const handleRetry = async (taskId) => {
     try {
-      const result = await patch(`/task/cancel/${taskId}`);
+      const result = await patch(`/task/retry/${taskId}`);
       toast.success(result?.message)
     } catch (err) {
       toast.error(err?.message ?? "Unexpected Error");

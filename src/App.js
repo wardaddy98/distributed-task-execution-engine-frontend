@@ -1,6 +1,6 @@
 import { ToastContainer } from 'react-toastify';
 import Header from './components/Header';
-// import FilterTasks from './components/FilterTasks';
+import FilterTasks from './components/FilterTasks';
 import TaskForm from './components/TaskForm';
 import TasksSection from './components/TasksSection';
 import WorkersIndicator from './components/WorkersIndicator';
@@ -17,7 +17,7 @@ function App() {
         </div>
 
         <TasksSection />
-        {/* <FilterTasks /> */}
+        <FilterTasks />
       </main>
       <ToastContainer position="top-right" theme="dark" />
     </ApiKeyProvider>
