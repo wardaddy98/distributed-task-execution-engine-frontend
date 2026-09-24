@@ -19,7 +19,12 @@ const TasksSection = () => {
 
   // Live updates: replace the task if we already have it, otherwise add it to the top.
   useTaskEvents((task) =>
-    setTasks((prev) => [task, ...prev.filter((t) => t.id !== task.id)]),
+    // Replaced in place so progress updates don't reshuffle the cards.
+    setTasks((prev) =>
+      prev.some((t) => t.id === task.id)
+        ? prev.map((t) => (t.id === task.id ? task : t))
+        : [task, ...prev],
+    ),
   );
 
   useLayoutEffect(() => {
