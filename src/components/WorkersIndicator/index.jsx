@@ -1,17 +1,28 @@
+import { useMemo, useState } from "react";
+import { useWorkerEvents } from "../../hooks/useWorkerEvents";
+
 const WorkersIndicator = ({ total, idle, busy }) => {
-  const stats = [
-    { label: 'Total', value: total, dotClassName: 'bg-slate-400' },
-    { label: 'Idle', value: idle, dotClassName: 'bg-emerald-400' },
-    { label: 'Busy', value: busy, dotClassName: 'bg-amber-400' },
-  ];
+  const [workers, setWorkers] = useState({
+    total: 0,
+    idle: 0,
+    busy: 0,
+  });
+
+  //subscribe to sse backend endpoint /worker/events 
+  useWorkerEvents((workersData) => setWorkers(workersData));
+
+  const stats = useMemo(
+    () => [
+      { label: "Total", value: workers.total, dotClassName: "bg-slate-400" },
+      { label: "Idle", value: workers.idle, dotClassName: "bg-emerald-400" },
+      { label: "Busy", value: workers.busy, dotClassName: "bg-amber-400" },
+    ],
+    [workers],
+  );
 
   return (
-    <section
-      className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-lg shadow-black/20 sm:p-6"
-    >
-      <h2 className="text-lg font-semibold text-slate-50">
-        Workers
-      </h2>
+    <section className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-lg shadow-black/20 sm:p-6">
+      <h2 className="text-lg font-semibold text-slate-50">Workers</h2>
 
       <dl className="mt-4 grid grid-cols-3 gap-3 lg:grid-cols-1">
         {stats.map(({ label, value, dotClassName }) => (

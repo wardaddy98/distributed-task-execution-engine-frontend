@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import TasksSection from '.';
 
 const makeTask = (id, status) => ({
@@ -46,4 +46,16 @@ test('shows an empty message for columns without tasks', () => {
 test('renders dummy tasks by default', () => {
   render(<TasksSection />);
   expect(screen.getAllByRole('article').length).toBeGreaterThan(0);
+});
+
+test('adds a pushed task and moves it between columns as its status changes', () => {
+  render(<TasksSection tasks={[]} />);
+  const source = EventSource.instances[EventSource.instances.length - 1];
+
+  act(() => source.emit('task', makeTask(9, 'queued')));
+  expect(within(getColumn('Queued')).getAllByRole('article')).toHaveLength(1);
+
+  act(() => source.emit('task', makeTask(9, 'running')));
+  expect(within(getColumn('Queued')).queryByRole('article')).not.toBeInTheDocument();
+  expect(within(getColumn('Running')).getAllByRole('article')).toHaveLength(1);
 });
