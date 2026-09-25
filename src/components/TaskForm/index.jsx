@@ -37,7 +37,7 @@ const TaskForm = () => {
     try {
       await post("/task", {
         ...formValues,
-        payload: parsedPayload,
+        payload: parsedPayload?.value,
       });
     } catch (err) {
       toast.error(err?.message);

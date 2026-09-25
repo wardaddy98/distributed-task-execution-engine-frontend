@@ -5,6 +5,7 @@ const MAX_RETRIES = 3;
 const TaskCard = ({ task, onCancel, onRetry }) => {
   const { id, type, priority, status, progress, retries, createdAt } = task;
   const canCancel = status === 'running' || status === 'queued';
+  const canRetry = status === 'dead' || status === 'cancelled';
   const createdTime = new Date(createdAt).toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
@@ -48,7 +49,7 @@ const TaskCard = ({ task, onCancel, onRetry }) => {
         </div>
       )}
 
-      {status === 'dead' && (
+      {canRetry && (
         <div className="mt-auto flex justify-end">
           <Button variant="outlined" onClick={() => onRetry(id)}>
             Retry
